@@ -1,0 +1,8 @@
+These PCB's and Schematic diagrams were used to create the robotic arm.
+
+There are multiple "Extender" PCB's as there were subcircuit components (ie the ultrasonic) that were
+better suited to be attached to a board rather than connected to the base board with long wires
+The colour sensor required it's own circuit board as it was created with raw parts and the parts needed specific placement
+(ie the RGB LEDs needed to be equally as close to each other with a photoresistor).
+
+The base PCB was purposefully created large as it also acts as an ardiuno mount
