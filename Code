@@ -1,0 +1,249 @@
+/*this code makes the robot first initialize colour detection. Then go look for a barrel, grab it, sense its colour, and put it in the desired location*/
+
+//for SERVOS
+#include <Servo.h>
+//servos names
+Servo hori;
+Servo vsPrim;
+Servo vsSec;
+Servo vsTer;
+Servo grip;
+//position variables
+int horiPos;
+int checkpoint;
+int x;
+int vsPrimSpot = 110;
+int vsSecSpot = 10;
+int vsTerSpot = 90;
+int period = 40;
+
+//for IR
+int obstaclePin = 9;
+int hasObstacle = HIGH;
+
+//for colour sensor
+// Define colour sensor LED pins
+int ledArray[] = {6, 7, 8};
+// boolean to know if the balance has been set
+boolean balanceSet = false;
+//floats to hold colour arrays
+float colourArray[] = {0, 0, 0};
+float whiteArray[] = {0, 0, 0};
+float blackArray[] = {0, 0, 0};
+//place holder for average
+int avgRead;
+int sensorPin = A2;
+
+
+void setup() {
+  //for SERVOS
+  hori.attach(1);
+  hori.write(90);
+  grip.attach(2);
+  grip.write(0);
+  vsTer.attach(3);
+  vsTer.write(35);
+  vsSec.attach(4);
+  vsSec.write(10);
+  vsPrim.attach(5);
+  vsPrim.write(110);
+
+  //for IR
+  pinMode(obstaclePin, INPUT);
+
+  //for colour sensor
+  //setup the outputs for the colour sensor
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);
+
+  for (int i = 0; i <= 2; i++) {
+    digitalWrite(ledArray[i], HIGH);
+  }
+}
+
+void checkObstacle() {
+  //check if object is in front of robot
+  hasObstacle = digitalRead(obstaclePin);
+  //if object is seen
+  if (hasObstacle == LOW) {
+    delay(50);
+    getBarrel();
+  }
+  else
+  {
+    digitalWrite(ledArray[2], LOW);
+  }
+}
+
+void getBarrel() {
+  //extend then de-extend choose primary arm axis as primary x reference
+
+  //EXTENSION
+  for (x = 110; x >= 60; x--)
+  {
+    vsPrim.write(x);
+    vsSec.write(vsSecSpot);
+    delay(period);
+    vsSecSpot += 2;
+  }
+  vsTer.write(90);
+
+  //grab barrel
+  for (x = 0; x <= 90; x++)
+  {
+    grip.write(x);
+    delay(period);
+  }
+
+  //**CHECK FOR COLOUR HERE**
+  checkColour();
+
+  //DE-EXTENSION
+  for (x = 60; x <= 110; x++)
+  {
+    vsPrim.write(x);
+    vsSec.write(vsSecSpot);
+    delay(period);
+    vsSecSpot -= 2;
+  }
+  vsTer.write(35);
+
+  //finish by moving to desired location and releasing barrel
+  releaseBarrelAtLocation();
+}
+
+void releaseBarrelAtLocation() {
+
+  //find out where to put barrel
+  //if blue
+  if (((int(colourArray[0])) > (int(colourArray[1]))) && ((int(colourArray[0])) > (int(colourArray[2])))) {
+    digitalWrite(ledArray[0], LOW);
+    checkpoint = 50;
+  }
+  //if green
+  else if (((int(colourArray[1])) > (int(colourArray[0]))) && ((int(colourArray[1])) > (int(colourArray[2])))) {
+    digitalWrite(ledArray[1], LOW);
+    checkpoint = 100;
+  }
+  //if red
+  else {
+    digitalWrite(ledArray[2], LOW);
+    checkpoint = 150;
+  }
+
+  //go to the location of the colour
+  if (checkpoint < horiPos) {
+    for (x = horiPos; x > checkpoint; x--) {
+      hori.write(x);
+      delay(period);
+    }
+  }
+  else {
+    for (x = horiPos; x < checkpoint; x++) {
+      hori.write(x);
+      delay(period);
+    }
+  }
+
+  //release barrel
+  for (x = 90; x >= 20; x--) {
+    grip.write(x);
+    delay(period);
+  }
+
+  //make arduino appear to stop
+  cli();
+  while ( true ); //An empty loop.
+
+}
+
+void checkBalance() {
+  //check if the balance has been set, if not, set it
+  if (balanceSet == false) {
+    setBalance();
+  }
+}
+
+void setBalance() {
+  //set white balance
+  //turn red to indicate to get ready for white colour sensing
+  digitalWrite(ledArray[2], LOW);
+  delay(5000);
+  digitalWrite(ledArray[2], HIGH);
+  //delay for five seconds, this gives us time to get a white sample in front of our sensor
+  //scan the white sample.
+  //go through each light, get a reading, set the base reading for each colour red, green, and blue to the white array
+
+  for (int i = 2; i >= 0; i--) {
+    digitalWrite(ledArray[i], LOW);
+    delay(100);
+    getReading(5);
+    //number is the number of scans to take for average, this whole function is redundant, one reading works just as well.
+    whiteArray[i] = avgRead;
+    digitalWrite(ledArray[i], HIGH);
+    delay(100);
+  }
+
+  //done scanning white, now it will pulse blue to tell you that it is time for the black (or grey) sample.
+  //set black balance
+  //turn on blue to indicate to get ready for black colour sensing
+  digitalWrite(ledArray[0], LOW);
+  delay(5000);              //wait for five seconds so we can position our black sample
+  digitalWrite(ledArray[0], HIGH);
+  //go ahead and scan, sets the colour values for red, green, and blue when exposed to black
+
+  for (int i = 2; i >= 0; i--) {
+    digitalWrite(ledArray[i], LOW);
+    delay(100);
+    getReading(5);
+    blackArray[i] = avgRead;
+    digitalWrite(ledArray[i], HIGH);
+    delay(100);
+  }
+  //set boolean value so we know that balance is set
+  balanceSet = true;
+  //delay another 5 seconds to allow the human to catch up to what is going on
+  delay(5000);
+}
+
+void checkColour() {
+  for (int i = 2; i >= 0; i--) {
+    digitalWrite(ledArray[i], LOW); //turn or the LED, red, green or blue depending which iteration
+    delay(100);                      //delay to allow CdS to stabalize, they are slow
+    getReading(5);                  //take a reading however many times
+    colourArray[i] = avgRead;        //set the current colour in the array to the average reading
+    float greyDiff = whiteArray[i] - blackArray[i];                    //the highest possible return minus the lowest returns the area for values in between
+    colourArray[i] = (colourArray[i] - blackArray[i]) / (greyDiff) * 255; //the reading returned minus the lowest value divided by the possible range multiplied by 255 will give us a value roughly between 0-255 representing the value for the current reflectivity(for the colour it is exposed to) of what is being scanned
+    digitalWrite(ledArray[i], HIGH);  //turn off the current LED
+    delay(100);
+  }
+}
+void getReading(int times) {
+  int reading;
+  int tally = 0;
+  //take the reading however many times was requested and add them up
+  for (int i = 0; i < times; i++) {
+    reading = analogRead(sensorPin);
+    tally = reading + tally;
+    delay(10);
+  }
+  //calculate the average and set it
+  avgRead = (tally) / times;
+}
+
+void loop() {
+  //NOW WE CAN START THE REAL CODE
+  //BEGIN WITH INITIALIZATION OF COLOUR SENSOR
+  checkBalance();
+  delay(5000);
+
+  //move left and check for object
+  for (int horiPos = 10; horiPos <= 170; horiPos++)
+  {
+    hori.write(horiPos);
+    delay(period);
+    checkObstacle();
+    delay(period);
+  }
+}
