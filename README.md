@@ -4,16 +4,16 @@ This is a project I completed in grade 12.
 
 It is a 5-servo robotic arm, powered by an Arduino with a colour sensor and detectors, to intelligently locate a coloured barrel, pick it up and configure its colour, and place it onto its designated zone.
 
-![Image of Complete Robotic Arm](Images/main arm.png)
+![Image of Complete Robotic Arm](Images/main%20arm.png)
 
 A few key features to point out are the colour sensor and design.
 *The project contained a simple colour sensor that uses a CdS photocell and RGB diode to gather information on different wavelengths reflected by the surface each barrel when red, blue, and green were shown on the part. I coded an algorithm to gather data over a set number of samples and determine the most prominent colour seen. This elminated the need of prebuild colour sensor, reducing project cost by 20\% 
 *The project was designed using AutoCAD online 3D modelling software, and all parts of the base model were printed to assemble the robot. The arm was able to rotate about a semi circle and raech out and grab a barell
 
 Closeup View of Colour Sensor
-![Image of Colour Sensor](Images/colour sensor closeup.png)
+![Image of Colour Sensor](Images/colour%20sensor%20closeup.png)
 
 Functioning Arm
-![Image of Functioning Arm](Images/arm function.png)
+![Image of Functioning Arm](Images/arm%20function.png)
 
 The code and project writeup can be found in the [project writeup](https://github.com/wshahbaz/Green_Arm/blob/master/Green%20Arm%20Informational%20Report.pdf)
