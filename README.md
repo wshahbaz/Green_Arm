@@ -19,3 +19,6 @@ A few key features to point out are the colour sensor and design.
 ![Image of Functioning Arm](Images/armFunc.jpeg)
 
 The code and project writeup can be found in the [project writeup](https://github.com/wshahbaz/Green_Arm/blob/master/Green%20Arm%20Informational%20Report.pdf)
+
+
+Note that this project was inspired by [IBM's Green Arm Challenge](http://www.orc.ieeeottawa.ca/green-arm-challenge/). It has nothing to do with the colour of the robot :)
