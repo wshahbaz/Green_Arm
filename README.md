@@ -11,9 +11,11 @@ A few key features to point out are the colour sensor and design.
 *The project was designed using AutoCAD online 3D modelling software, and all parts of the base model were printed to assemble the robot. The arm was able to rotate about a semi circle and raech out and grab a barell
 
 ### Closeup View of Colour Sensor
+
 ![Image of Colour Sensor](Images/colour%20sensor%20closeup.png)
 
 ### Functioning Arm
+
 ![Image of Functioning Arm](Images/arm%20function.png)
 
 The code and project writeup can be found in the [project writeup](https://github.com/wshahbaz/Green_Arm/blob/master/Green%20Arm%20Informational%20Report.pdf)
